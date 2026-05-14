@@ -10,6 +10,12 @@
             <li>
                 {{ $post['title'] }}
                 <a href="/posts/{{ $post['id'] }}">View Post</a>
+                <a href="/posts/{{ $post['id'] }}/edit">Edit</a>
+                <form action="/posts/{{ $post['id'] }}" method="POST" style="display:inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit">Delete</button>
+                </form>
             </li>
         @endforeach
 

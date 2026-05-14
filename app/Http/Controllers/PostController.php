@@ -7,21 +7,31 @@ use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
-    private $posts = [
+    private $defaultPosts = [
         ['id' => 1, 'title' => 'First Post', 'content' => 'This is the first post.'],
         ['id' => 2, 'title' => 'Second Post', 'content' => 'This is the second post.'],
         ['id' => 3, 'title' => 'Third Post', 'content' => 'This is the third post.'],
         ['id' => 4, 'title' => 'Fourth Post', 'content' => 'This is the fourth post.'],
         ['id' => 5, 'title' => 'Fifth Post', 'content' => 'This is the fifth post.'],
     ];
-    
+
+    // get posts from session
+    private function getPosts()
+    {
+        if (!session()->has('posts')) {
+            session(['posts' => $this->defaultPosts]);
+        }
+        return session('posts');
+    }
+
     /**
      * Display a listing of the resources.
      */
     public function index()
     {
-        // get all posts from database
-        return view('posts.index', ['posts' => $this->posts]);
+        // get all posts
+        $posts = $this->getPosts();
+        return view('posts.index', ['posts' => $posts]);
     }
 
     /**
@@ -30,7 +40,8 @@ class PostController extends Controller
     public function show(string $id)
     {
         // get details of one post
-        foreach ($this->posts as $post) {
+        $posts = $this->getPosts();
+        foreach ($posts as $post) {
             if ($post['id'] == $id) {
                 return view('posts.show', ['post' => $post]);
             }
@@ -52,9 +63,16 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        // store data in database
-        $title = $request->title;
-        return "Post created successfully with title: {$title}";
+        // store data in session
+        $posts = $this->getPosts();
+        $newPost = [
+            'id' => count($posts) > 0 ? max(array_column($posts, 'id')) + 1 : 1,
+            'title' => $request->input('title'),
+            'content' => $request->input('content'),
+        ];
+        $posts[] = $newPost;
+        session(['posts' => $posts]);
+        return redirect('/posts');
     }
 
     /**
@@ -63,6 +81,13 @@ class PostController extends Controller
     public function edit(string $id)
     {
         // return view of form to edit a post
+        $posts = $this->getPosts();
+        foreach ($posts as $post) {
+            if ($post['id'] == $id) {
+                return view('posts.edit', ['post' => $post]);
+            }
+        }
+        return 'Post not found, return to <a href="/posts">Posts</a>';
     }
 
     /**
@@ -70,7 +95,17 @@ class PostController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // update data of a post in database
+        // update data in session
+        $posts = $this->getPosts();
+        foreach ($posts as $key => $post) {
+            if ($post['id'] == $id) {
+                $posts[$key]['title'] = $request->input('title');
+                $posts[$key]['content'] = $request->input('content');
+                session(['posts' => $posts]);
+                return "Post updated sucessfully, return to <a href='/posts'>Posts</a>";
+            }
+        }
+        return 'Post not found';
     }
 
     /**
@@ -78,6 +113,15 @@ class PostController extends Controller
      */
     public function destroy(string $id)
     {
-        // delete a post from database
+        // delete from session
+        $posts = $this->getPosts();
+        foreach ($posts as $key => $post) {
+            if ($post['id'] == $id) {
+                unset($posts[$key]);
+                session(['posts' => array_values($posts)]);
+                return "Post deleted sucessfully, return to <a href='/posts'>Posts</a>";
+            }
+        }
+        return "Post not found, return to <a href='/posts'>Posts</a>";
     }
 }
