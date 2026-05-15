@@ -180,14 +180,30 @@ class PostController extends Controller
     public function likePost(string $id)
     {
         $post = Post::findOrFail($id);
-        $post->likes()->create(['user_id' => auth()->id()]);
-        return redirect()->route('posts.show', $id)->with('success', 'Post liked!');
+
+        $existingLike = $post->likes()->where('user_id', auth()->id())->first();
+
+        if ($existingLike) {
+            $existingLike->delete();
+        } else {
+            $post->likes()->create(['user_id' => auth()->id()]);
+        }
+
+        return redirect(route('posts.show', $id) . '#post-likes');
     }
 
     public function likeComment(string $postId, string $commentId)
     {
         $comment = Comment::findOrFail($commentId);
-        $comment->likes()->create(['user_id' => auth()->id()]);
-        return redirect()->route('posts.show', $postId)->with('success', 'Comment liked!');
+
+        $existingLike = $comment->likes()->where('user_id', auth()->id())->first();
+
+        if ($existingLike) {
+            $existingLike->delete();
+        } else {
+            $comment->likes()->create(['user_id' => auth()->id()]);
+        }
+
+        return redirect(route('posts.show', $postId) . '#comment-' . $commentId);
     }
 }

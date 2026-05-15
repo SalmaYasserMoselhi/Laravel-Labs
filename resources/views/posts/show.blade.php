@@ -24,10 +24,10 @@
             @endif
             <p>Created At: {{ $post->created_at->format('d M Y, h:i A') }} ({{ $post->created_at->diffForHumans() }})</p>
 
-            <form action="{{ route('posts.like', $post->id) }}" method="POST" style="display:inline; margin-top: 10px;">
+            <form action="{{ route('posts.like', $post->id) }}" method="POST" style="display:inline; margin-top: 10px;" id="post-likes">
                 @csrf
                 <button type="submit" style="background: none; border: none; cursor: pointer; font-size: 16px;">
-                    ❤️ {{ $post->likes->count() }} Likes
+                    {{ $post->likes->where('user_id', auth()->id())->count() ? '❤️' : '🤍' }} {{ $post->likes->count() }} Likes
                 </button>
             </form>
 
@@ -53,13 +53,13 @@
             </form>
 
             @forelse ($post->comments as $comment)
-                <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 10px; max-width: 500px;">
+                <div id="comment-{{ $comment->id }}" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; margin-bottom: 10px; max-width: 500px;">
                     <p>{{ $comment->body }}</p>
                     <small style="color: #6b7280;">{{ $comment->created_at->diffForHumans() }}</small>
                     <form action="{{ route('posts.comments.like', [$post->id, $comment->id]) }}" method="POST" style="display:inline; float:right;">
                         @csrf
                         <button type="submit" style="background: none; border: none; cursor: pointer; font-size: 14px;">
-                            ❤️ {{ $comment->likes->count() }}
+                            {{ $comment->likes->where('user_id', auth()->id())->count() ? '❤️' : '🤍' }} {{ $comment->likes->count() }}
                         </button>
                     </form>
                 </div>
