@@ -1,36 +1,23 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\Post;
+use App\Models\User;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 
 
 class PostController extends Controller
 {
-    private $defaultPosts = [
-        ['id' => 1, 'title' => 'First Post', 'content' => 'This is the first post.'],
-        ['id' => 2, 'title' => 'Second Post', 'content' => 'This is the second post.'],
-        ['id' => 3, 'title' => 'Third Post', 'content' => 'This is the third post.'],
-        ['id' => 4, 'title' => 'Fourth Post', 'content' => 'This is the fourth post.'],
-        ['id' => 5, 'title' => 'Fifth Post', 'content' => 'This is the fifth post.'],
-    ];
-
-    // get posts from session
-    private function getPosts()
-    {
-        if (!session()->has('posts')) {
-            session(['posts' => $this->defaultPosts]);
-        }
-        return session('posts');
-    }
-
-    /**
-     * Display a listing of the resources.
-     */
     public function index()
     {
-        // get all posts
-        $posts = $this->getPosts();
+        // Query Builder
+        // $posts = DB::table('posts')->paginate(10);
+
+        // Eloquent ORM
+        $posts = Post::with('author')->paginate(10);
         return view('posts.index', ['posts' => $posts]);
     }
 
@@ -39,12 +26,18 @@ class PostController extends Controller
      */
     public function show(string $id)
     {
-        // get details of one post
-        $posts = $this->getPosts();
-        foreach ($posts as $post) {
-            if ($post['id'] == $id) {
-                return view('posts.show', ['post' => $post]);
-            }
+        // Query Builder
+        // $post = DB::table('posts')->where('id', $id)->first();
+        // $post = DB::table('posts')->find($id);
+
+        // Eloquent ORM
+        // $post = Post::find($id);
+
+        // Load author with post
+        $post = Post::with('author')->findOrFail($id);
+        
+        if ($post) {
+            return view('posts.show', ['post' => $post]);
         }
         return 'Post not found';
     }
@@ -55,24 +48,40 @@ class PostController extends Controller
      */
     public function create()
     {
-        return view("posts.create");
+        $users = User::all();
+        return view("posts.create", ['users' => $users]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created resource in database.
      */
     public function store(Request $request)
     {
-        // store data in session
-        $posts = $this->getPosts();
-        $newPost = [
-            'id' => count($posts) > 0 ? max(array_column($posts, 'id')) + 1 : 1,
-            'title' => $request->input('title'),
-            'content' => $request->input('content'),
-        ];
-        $posts[] = $newPost;
-        session(['posts' => $posts]);
-        return redirect('/posts');
+        // Query Builder
+        // DB::table("posts")->insert([
+        //     "title" => $request->input('title'),
+        //     "content" => $request->input('content'),
+        //     "author_id" => $request->input('author_id'),
+        //     "created_at" => now(),
+        //     "updated_at" => now(),
+        // ]);
+
+        // Eloquent ORM
+        // $post = new Post();
+        // $post->title = $request->input('title');
+        // $post->content = $request->input('content');
+        // $post->author_id = $request->input('author_id');
+        // $post->save();
+
+        // Mass assignment - works if fillable is set
+        Post::create([
+            "title" => $request->input('title'),
+            "content" => $request->input('content'),
+            "author_id" => $request->input('author_id'),
+        ]);
+
+
+        return redirect()->route("posts.index")->with("success", "Post created successfully");
     }
 
     /**
@@ -80,14 +89,17 @@ class PostController extends Controller
      */
     public function edit(string $id)
     {
-        // return view of form to edit a post
-        $posts = $this->getPosts();
-        foreach ($posts as $post) {
-            if ($post['id'] == $id) {
-                return view('posts.edit', ['post' => $post]);
-            }
+        // Query Builder
+        // $post = DB::table('posts')->find($id);
+
+        // Eloquent ORM
+        $post = Post::find($id);
+
+        if ($post) {
+            $users = User::all();
+            return view('posts.edit', compact('post', 'users'));
         }
-        return 'Post not found, return to <a href="/posts">Posts</a>';
+        return 'Post not found';
     }
 
     /**
@@ -95,15 +107,22 @@ class PostController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // update data in session
-        $posts = $this->getPosts();
-        foreach ($posts as $key => $post) {
-            if ($post['id'] == $id) {
-                $posts[$key]['title'] = $request->input('title');
-                $posts[$key]['content'] = $request->input('content');
-                session(['posts' => $posts]);
-                return "Post updated sucessfully, return to <a href='/posts'>Posts</a>";
-            }
+        // Query Builder
+        // DB::table('posts')->where('id', $id)->update([
+        //     'title' => $request->input('title'),
+        //     'content' => $request->input('content'),
+        //     'author_id' => $request->input('author_id'),
+        //     'updated_at' => now(),
+        // ]);
+
+        // Eloquent ORM
+        $post = Post::find($id);
+        if ($post) {
+            $post->title = $request->input('title');
+            $post->content = $request->input('content');
+            $post->author_id = $request->input('author_id');
+            $post->save();
+            return redirect()->route('posts.index')->with('success', 'Post updated successfully');
         }
         return 'Post not found';
     }
@@ -113,15 +132,15 @@ class PostController extends Controller
      */
     public function destroy(string $id)
     {
-        // delete from session
-        $posts = $this->getPosts();
-        foreach ($posts as $key => $post) {
-            if ($post['id'] == $id) {
-                unset($posts[$key]);
-                session(['posts' => array_values($posts)]);
-                return "Post deleted sucessfully, return to <a href='/posts'>Posts</a>";
-            }
+        // Query Builder
+        // DB::table('posts')->where('id', $id)->delete();
+
+        // Eloquent ORM
+        $post = Post::find($id);
+        if ($post) {
+            $post->delete();
+            return redirect()->route('posts.index')->with('success', 'Post deleted successfully');
         }
-        return "Post not found, return to <a href='/posts'>Posts</a>";
+        return 'Post not found';
     }
 }
