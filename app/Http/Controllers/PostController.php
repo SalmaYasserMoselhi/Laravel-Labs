@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\User;
 
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -55,14 +57,10 @@ class PostController extends Controller
     /**
      * Store a newly created resource in database.
      */
-    public function store(Request $request)
+    public function store(StorePostRequest $request)
     {
-        // Validation
-        $request->validate([
-            'title'     => 'required|min:3|max:255',
-            'content'   => 'required|min:10',
-            'author_id' => 'required|exists:users,id',
-        ]);
+        // Validation is handled automatically by StorePostRequest
+        // No need for $request->validate() here
 
         // Query Builder
         // DB::table("posts")->insert([
@@ -80,12 +78,8 @@ class PostController extends Controller
         // $post->author_id = $request->input('author_id');
         // $post->save();
 
-        // Mass assignment - works if fillable is set
-        Post::create([
-            "title" => $request->input('title'),
-            "content" => $request->input('content'),
-            "author_id" => $request->input('author_id'),
-        ]);
+        // Mass assignment using only validated data (slug can't be injected)
+        Post::create($request->validated());
 
 
         return redirect()->route("posts.index")->with("success", "Post created successfully");
@@ -117,14 +111,9 @@ class PostController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdatePostRequest $request, string $id)
     {
-        // Validation
-        $request->validate([
-            'title'     => 'required|min:3|max:255',
-            'content'   => 'required|min:10',
-            'author_id' => 'required|exists:users,id',
-        ]);
+        // Validation is handled automatically by UpdatePostRequest
 
         // Query Builder
         // DB::table('posts')->where('id', $id)->update([
@@ -161,6 +150,21 @@ class PostController extends Controller
             return redirect()->route('posts.index')->with('success', 'Post deleted successfully');
         }
         return 'Post not found';
+    }
+
+    // restore soft deleted resource
+    public function restore(string $id)
+    {
+        $post = Post::onlyTrashed()->findOrFail($id);
+        $post->restore();
+        return redirect()->route('posts.trashed')->with('success', 'Post restored successfully');
+    }
+
+    // show soft deleted posts
+    public function trashed()
+    {
+        $posts = Post::onlyTrashed()->paginate(10);
+        return view('posts.trashed', compact('posts'));
     }
 }
 

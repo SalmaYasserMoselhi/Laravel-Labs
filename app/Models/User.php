@@ -16,7 +16,8 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password'];
+    protected $fillable = ['name', 'email'];
+
     // relationship method (one user has many posts)
     public function posts(): HasMany
     {
