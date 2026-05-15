@@ -57,6 +57,13 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
+        // Validation
+        $request->validate([
+            'title'     => 'required|min:3|max:255',
+            'content'   => 'required|min:10',
+            'author_id' => 'required|exists:users,id',
+        ]);
+
         // Query Builder
         // DB::table("posts")->insert([
         //     "title" => $request->input('title'),
@@ -112,6 +119,13 @@ class PostController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        // Validation
+        $request->validate([
+            'title'     => 'required|min:3|max:255',
+            'content'   => 'required|min:10',
+            'author_id' => 'required|exists:users,id',
+        ]);
+
         // Query Builder
         // DB::table('posts')->where('id', $id)->update([
         //     'title' => $request->input('title'),
