@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Create Post</title>
-</head>
-<body>
+@extends('layouts.main')
+
+@section('title', 'Create Post')
+@section('content')
     <h1>Create Post</h1>
     <form action="{{ route('posts.store') }}" method="POST">
         @csrf
@@ -13,5 +11,4 @@
         <textarea id="content" name="content"></textarea><br><br>
         <input type="submit" value="Create">
     </form>
-</body>
-</html>
+@endsection

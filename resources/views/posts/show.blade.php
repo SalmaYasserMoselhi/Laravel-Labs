@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Show Post</title>
-</head>
-<body>
+@extends('layouts.main')
+
+@section('title', 'Show Post')
+@section('content')
     <h1>Show Post</h1>
     <p>Post ID: {{ $post['id'] }}</p>
     <p>Post Title: {{ $post['title'] }}</p>
@@ -16,5 +14,4 @@
     </form>
     <br><br>
     <a href="/posts">Back to posts</a>
-</body>
-</html>
+@endsection

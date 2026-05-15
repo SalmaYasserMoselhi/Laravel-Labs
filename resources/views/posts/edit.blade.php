@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Edit Post</title>
-</head>
-<body>
+@extends('layouts.main')
+
+@section('title', 'Edit Post')
+@section('content')
     <h1>Edit Post</h1>
     <form action="{{ route('posts.update', $post['id']) }}" method="POST">
         @csrf
@@ -16,5 +14,5 @@
     </form>
     <br>
     <a href="/posts">Back to posts</a>
-</body>
-</html>
+@endsection
+

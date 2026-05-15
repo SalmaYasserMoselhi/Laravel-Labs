@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Posts</title>
-</head>
-<body>
+@extends('layouts.main')
+
+@section('title', 'Posts')
+@section('content')
     <h1>Posts</h1>
     <ul>
         @foreach ($posts as $post)
@@ -20,5 +18,5 @@
         @endforeach
 
     </ul>
-</body>
-</html>
+@endsection
+
