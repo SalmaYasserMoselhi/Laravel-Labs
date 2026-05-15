@@ -7,7 +7,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <form action="{{ route('posts.store') }}" method="POST">
+            <form action="{{ route('posts.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <label for="title">Title:</label>
                 <input type="text" id="title" name="title" value="{{ old('title') }}">
@@ -25,6 +25,10 @@
                     @endforeach
                 </select>
                 @error('author_id') <span style="color: red;">{{ $message }}</span> @enderror
+                <br><br>
+                <label for="image">Post Image:</label>
+                <input type="file" id="image" name="image">
+                @error('image') <span style="color: red;">{{ $message }}</span> @enderror
                 <br><br>
                 <x-primary-button type="submit">Create</x-primary-button>
             </form>

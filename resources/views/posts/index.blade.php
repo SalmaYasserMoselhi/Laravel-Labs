@@ -29,6 +29,7 @@
                         <thead>
                             <tr class="border-b border-gray-200">
                                 <th class="py-3 px-4 font-semibold text-gray-600">Title</th>
+                                <th class="py-3 px-4 font-semibold text-gray-600">Image</th>
                                 <th class="py-3 px-4 font-semibold text-gray-600">Slug</th>
                                 <th class="py-3 px-4 font-semibold text-gray-600">Created At</th>
                                 <th class="py-3 px-4 font-semibold text-gray-600">Time Ago</th>
@@ -39,6 +40,13 @@
                             @foreach ($posts as $post)
                                 <tr class="border-b border-gray-100 hover:bg-gray-50">
                                     <td class="py-3 px-4 font-medium">{{ $post->title }}</td>
+                                    <td class="py-3 px-4">
+                                        @if ($post->image)
+                                            <img src="{{ asset('storage/' . $post->image) }}" alt="Post Image" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                                        @else
+                                            <span class="text-sm text-gray-400">No Image</span>
+                                        @endif
+                                    </td>
                                     <td class="py-3 px-4 text-sm text-gray-500">{{ $post->slug }}</td>
                                     <td class="py-3 px-4 text-sm text-gray-500">{{ $post->created_at->format('d M Y, h:i A') }}</td>
                                     <td class="py-3 px-4 text-sm text-gray-500">{{ $post->created_at->diffForHumans() }}</td>

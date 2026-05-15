@@ -30,6 +30,13 @@ Route::middleware('auth')->group(function () {
 
     // restore soft deleted resource
     Route::patch('/posts/{id}/restore', [PostController::class, 'restore'])->name('posts.restore');
+
+    // comments
+    Route::post('/posts/{id}/comments', [PostController::class, 'storeComment'])->name('posts.comments.store');
+
+    // likes (polymorphic)
+    Route::post('/posts/{id}/like', [PostController::class, 'likePost'])->name('posts.like');
+    Route::post('/posts/{postId}/comments/{commentId}/like', [PostController::class, 'likeComment'])->name('posts.comments.like');
     
     Route::resource('users', UserController::class)->middleware('isAdmin');
 });

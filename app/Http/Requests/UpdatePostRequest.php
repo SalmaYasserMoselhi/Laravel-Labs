@@ -25,7 +25,8 @@ class UpdatePostRequest extends FormRequest
         return [
             'title' => [ 'required' ,'string', 'min:3', 'max:255', 'unique:posts,title,' . $this->route('id')],
             'content' => 'required|string|min:10',
-            'author_id'=> 'required|exists:users,id'
+            'author_id'=> 'required|exists:users,id',
+            'image' => 'nullable|image|max:20480',
         ];
     }
     public function messages(): array
@@ -41,6 +42,8 @@ class UpdatePostRequest extends FormRequest
             'content.min' => 'Content must be at least 10 characters',
             'author_id.required' => 'Please select an author',
             'author_id.exists' => 'Author not found',
+            'image.image' => 'The file must be an image',    
+            'image.max' => 'Image size must not exceed 20MB',
         ];
     }
 }

@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\Comment;
+use App\Models\Like;
 use App\Models\Post;
 use App\Models\User;
 
@@ -8,6 +10,7 @@ use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 
 
@@ -36,7 +39,7 @@ class PostController extends Controller
         // $post = Post::find($id);
 
         // Load author with post
-        $post = Post::with('author')->findOrFail($id);
+        $post = Post::with(['author', 'comments.likes', 'likes'])->findOrFail($id);
         
         if ($post) {
             return view('posts.show', ['post' => $post]);
@@ -62,27 +65,20 @@ class PostController extends Controller
         // Validation is handled automatically by StorePostRequest
         // No need for $request->validate() here
 
-        // Query Builder
-        // DB::table("posts")->insert([
-        //     "title" => $request->input('title'),
-        //     "content" => $request->input('content'),
-        //     "author_id" => $request->input('author_id'),
-        //     "created_at" => now(),
-        //     "updated_at" => now(),
-        // ]);
+        $data = $request->validated();
 
-        // Eloquent ORM
-        // $post = new Post();
-        // $post->title = $request->input('title');
-        // $post->content = $request->input('content');
-        // $post->author_id = $request->input('author_id');
-        // $post->save();
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('posts_images', 'public');
+        }
 
         // Mass assignment using only validated data (slug can't be injected)
-        Post::create($request->validated());
-
-
-        return redirect()->route("posts.index")->with("success", "Post created successfully");
+        $post = Post::create($data);
+        if($post){
+            return redirect()->route("posts.index")->with("success", "Post created successfully");
+        } else{
+            return redirect()->route("posts.index")->with("error", "Post creation failed");
+        }
     }
 
     /**
@@ -113,22 +109,20 @@ class PostController extends Controller
      */
     public function update(UpdatePostRequest $request, string $id)
     {
-        // Validation is handled automatically by UpdatePostRequest
-
-        // Query Builder
-        // DB::table('posts')->where('id', $id)->update([
-        //     'title' => $request->input('title'),
-        //     'content' => $request->input('content'),
-        //     'author_id' => $request->input('author_id'),
-        //     'updated_at' => now(),
-        // ]);
-
         // Eloquent ORM
-        $post = Post::find($id);
+        $post = Post::findOrFail($id);
         if ($post) {
             $post->title = $request->input('title');
             $post->content = $request->input('content');
             $post->author_id = $request->input('author_id');
+
+            if ($request->hasFile('image')) {
+                if ($post->image) {
+                    Storage::disk('public')->delete($post->image);
+                }
+                $post->image = $request->file('image')->store('posts_images', 'public');
+            }
+
             $post->save();
             return redirect()->route('posts.index')->with('success', 'Post updated successfully');
         }
@@ -140,11 +134,8 @@ class PostController extends Controller
      */
     public function destroy(string $id)
     {
-        // Query Builder
-        // DB::table('posts')->where('id', $id)->delete();
-
         // Eloquent ORM
-        $post = Post::find($id);
+        $post = Post::findOrFail($id);
         if ($post) {
             $post->delete();
             return redirect()->route('posts.index')->with('success', 'Post deleted successfully');
@@ -166,6 +157,37 @@ class PostController extends Controller
         $posts = Post::onlyTrashed()->paginate(10);
         return view('posts.trashed', compact('posts'));
     }
-}
 
-// model binding
+    // store a new comment on a post
+    public function storeComment(Request $request, string $id)
+    {
+        $request->validate([
+            'body' => 'required|string|min:3',
+        ], [
+            'body.required' => 'Please enter a comment',
+            'body.min' => 'Comment must be at least 3 characters',
+        ]);
+
+        $post = Post::findOrFail($id);
+
+        $post->comments()->create([
+            'body' => $request->input('body'),
+        ]);
+
+        return redirect()->route('posts.show', $id)->with('success', 'Comment added successfully');
+    }
+
+    public function likePost(string $id)
+    {
+        $post = Post::findOrFail($id);
+        $post->likes()->create(['user_id' => auth()->id()]);
+        return redirect()->route('posts.show', $id)->with('success', 'Post liked!');
+    }
+
+    public function likeComment(string $postId, string $commentId)
+    {
+        $comment = Comment::findOrFail($commentId);
+        $comment->likes()->create(['user_id' => auth()->id()]);
+        return redirect()->route('posts.show', $postId)->with('success', 'Comment liked!');
+    }
+}

@@ -7,7 +7,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <form action="{{ route('posts.update', $post->id) }}" method="POST">
+            <form action="{{ route('posts.update', $post->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <label for="title">Title:</label>
@@ -26,6 +26,16 @@
                     @endforeach
                 </select>
                 @error('author_id') <span style="color: red;">{{ $message }}</span> @enderror
+                <br><br>
+                @if ($post->image)
+                    <label>Current Image:</label><br>
+                    <img src="{{ asset('storage/' . $post->image) }}" alt="Post Image" style="max-width: 200px; max-height: 200px; margin-bottom: 10px;">
+                    <br>
+                @endif
+
+                <label for="image">Change Image:</label>
+                <input type="file" id="image" name="image">
+                @error('image') <span style="color: red;">{{ $message }}</span> @enderror
                 <br><br>
                 <x-primary-button type="submit">Update</x-primary-button>
             </form>
