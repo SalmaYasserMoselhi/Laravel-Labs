@@ -87,19 +87,24 @@ class PostController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    // public function edit(string $id)
+    // {
+    //     // Query Builder
+    //     // $post = DB::table('posts')->find($id);
+
+    //     // Eloquent ORM
+    //     $post = Post::find($id);
+
+    //     if ($post) {
+    //         $users = User::all();
+    //         return view('posts.edit', compact('post', 'users'));
+    //     }
+    //     return 'Post not found';
+    // }
+    public function edit(Post $post) // laravel searches for $post by Post::findOrFail($id);
     {
-        // Query Builder
-        // $post = DB::table('posts')->find($id);
-
-        // Eloquent ORM
-        $post = Post::find($id);
-
-        if ($post) {
-            $users = User::all();
-            return view('posts.edit', compact('post', 'users'));
-        }
-        return 'Post not found';
+        $users = User::all();
+        return view('posts.edit', compact('post','users'));
     }
 
     /**
@@ -144,3 +149,5 @@ class PostController extends Controller
         return 'Post not found';
     }
 }
+
+// model binding
