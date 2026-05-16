@@ -1,0 +1,10 @@
+1- Laravel Apis (posts endpoits)
+	- php artisan install:api (this will create api.php and install sanctum)
+	- php artisan make:controller Api\PostController --api
+	- Resource
+2- Laravel Sanctum
+3- Laravel Socialite
+
+--------------------------------------------
+login -> token (store it in database)
+any other request -> (token + request body)
