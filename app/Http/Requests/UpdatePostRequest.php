@@ -25,7 +25,7 @@ class UpdatePostRequest extends FormRequest
         return [
             'title' => [ 'required' ,'string', 'min:3', 'max:255', 'unique:posts,title,' . $this->route('id')],
             'content' => 'required|string|min:10',
-            'author_id'=> 'required|exists:users,id',
+            'author_id'=> ['required', 'exists:users,id', new MaxPostsPerUser],
             'image' => 'nullable|image|max:20480',
         ];
     }

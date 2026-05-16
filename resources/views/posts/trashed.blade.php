@@ -42,6 +42,11 @@
                                                 @method('PATCH')
                                                 <button type="submit" class="text-green-600 hover:text-green-800 text-sm font-medium">Restore</button>
                                             </form>
+                                            <form action="{{ route('posts.forceDelete', $post->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure? This will permanently delete the post!')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-medium ml-3">Force Delete</button>
+                                            </form>
                                         </td>
                                     </tr>
                                 @endforeach

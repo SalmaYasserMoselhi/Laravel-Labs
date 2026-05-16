@@ -5,6 +5,7 @@ namespace App\Models;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -27,6 +28,15 @@ class Post extends Model
                 'onUpdate' => true,
             ]
         ];
+    }
+
+    protected function title(): Attribute
+    {
+        return Attribute::make(
+            get: fn (string $value) => ucfirst($value),
+
+            set: fn (string $value) => strtolower($value),
+        );
     }
 
     // relationship method (one post belongs to one user)

@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
 
     // restore soft deleted resource
     Route::patch('/posts/{id}/restore', [PostController::class, 'restore'])->name('posts.restore');
+    Route::delete('/posts/{id}/force-delete', [PostController::class, 'forceDelete'])->name('posts.forceDelete');
 
     // comments
     Route::post('/posts/{id}/comments', [PostController::class, 'storeComment'])->name('posts.comments.store');

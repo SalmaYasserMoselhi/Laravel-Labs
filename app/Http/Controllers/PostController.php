@@ -158,6 +158,18 @@ class PostController extends Controller
         return view('posts.trashed', compact('posts'));
     }
 
+    public function forceDelete(string $id)
+    {
+        $post = Post::onlyTrashed()->findOrFail($id);
+
+        if ($post->image) {
+            Storage::disk('public')->delete($post->image);
+        }
+
+        $post->forceDelete();
+        return redirect()->route('posts.trashed')->with('success', 'Post permanently deleted');
+    }
+
     // store a new comment on a post
     public function storeComment(Request $request, string $id)
     {
