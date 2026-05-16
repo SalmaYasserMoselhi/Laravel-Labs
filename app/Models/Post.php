@@ -30,6 +30,7 @@ class Post extends Model
         ];
     }
 
+    // Mutator and Accessor
     protected function title(): Attribute
     {
         return Attribute::make(

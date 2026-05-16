@@ -166,6 +166,12 @@ class PostController extends Controller
             Storage::disk('public')->delete($post->image);
         }
 
+        foreach ($post->comments as $comment) {
+            $comment->likes()->delete();
+        }
+        $post->likes()->delete();
+        $post->comments()->delete();
+
         $post->forceDelete();
         return redirect()->route('posts.trashed')->with('success', 'Post permanently deleted');
     }
