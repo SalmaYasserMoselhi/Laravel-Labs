@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\MaxPostsPerUser;
 
 class StorePostRequest extends FormRequest
 {
@@ -25,8 +26,8 @@ class StorePostRequest extends FormRequest
         return [
             'title' => [ 'required' ,'string', 'min:3', 'max:255', 'unique:posts,title'],
             'content' => 'required|string|min:10',
-            'author_id'=> 'required|exists:users,id',
-            'image' => 'required|image',
+            'author_id'=> ['required', 'exists:users,id', new MaxPostsPerUser],
+            'image' => 'required|image|mimes:jpg,png',
         ];
     }
 
@@ -45,6 +46,7 @@ class StorePostRequest extends FormRequest
             'author_id.exists' => 'Author not found',
             'image.required' => 'Please upload an image',
             'image.image' => 'The file must be an image',
+            'image.mimes' => 'Only JPG and PNG images are allowed',
         ];
     }
 }
